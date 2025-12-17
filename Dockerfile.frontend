@@ -1,0 +1,32 @@
+# Base Image
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY frontend/package*.json ./
+RUN npm ci
+
+# Copy Source Code
+COPY frontend/ .
+
+# Build
+RUN npm run build
+
+# --- Production Stage ---
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Expose Port
+EXPOSE 3000
+
+# Run Command
+CMD ["node", "server.js"]

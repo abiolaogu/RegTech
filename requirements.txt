@@ -1,0 +1,13 @@
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+python-multipart
+jinja2
+weasyprint
+boto3
+httpx
+pytest
+pytest-asyncio
+# For future usage
+confluent-kafka
+faststream

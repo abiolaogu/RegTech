@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # --- Identity & Access (Placeholder) ---
+  # keycloak: ...
+
+  # --- Database ---
+  db:
+    image: postgres:15
+    container_name: regtech_db
+    environment:
+      POSTGRES_USER: regtech
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: regtech_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # --- Message Broker (Redpanda - Kafka Compatible) ---
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    container_name: regtech_broker
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --node-id 0
+      - --check=false
+    ports:
+      - "9092:9092"
+      - "9644:9644"
+
+  # --- Object Storage (MinIO - S3 Compatible) ---
+  minio:
+    image: minio/minio
+    container_name: regtech_storage
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  # --- Core Backend API ---
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: regtech_api
+    depends_on:
+      - db
+      - redpanda
+      - minio
+    environment:
+      DATABASE_URL: postgresql://regtech:securepassword@db:5432/regtech_core
+      KAFKA_BROKER_URL: redpanda:9092
+      S3_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    ports:
+      - "8000:8000"
+
+  # --- Frontend Application ---
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: regtech_web
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
+volumes:
+  postgres_data:
+  minio_data:
