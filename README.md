@@ -24,6 +24,15 @@
 - **Mobile**: React Native (Expo).
 - **Infrastructure**: Docker Compose, PostgreSQL, Redpanda (Kafka), MinIO (S3).
 
+## 📚 Documentation
+- **[Architecture Specification](docs/Architecture_Specification.md)**: System design and data flow.
+- **[Product Requirements (PRD)](docs/Product_Requirements_Document.md)**: User personas and functional goals.
+- **[Technical Specifications](docs/Technical_Specifications.md)**: API, Schema, and Algorithms.
+- **[Operations Manual](docs/Operations_Manual.md)**: Deployment and AIOps monitoring.
+- **[User Manual](docs/User_Manual.md)**: Guides for Web Dashboard and Mobile App.
+- **[Developer Onboarding](docs/Training_Manual_Onboarding.md)**: Setup guide for new engineers.
+- **[Video Training Scripts](docs/Video_Training_Scripts_Detailed.md)**: Content for video tutorials.
+
 ## 📦 Deployment
 
 ### Prerequisites
