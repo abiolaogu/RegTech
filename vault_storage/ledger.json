@@ -34,5 +34,23 @@
     "meta": {
       "tag": "urgent"
     }
+  },
+  {
+    "timestamp": "2025-12-17T22:17:47.810348",
+    "category": "whistleblowing",
+    "hash": "3151084286f59511ce11d4fd234b6485012514587a1968fa55afff83b05e213e",
+    "path": "/tmp/test_vault/whistleblowing/2025/3151084286f5_secret_doc.txt",
+    "meta": {
+      "tag": "urgent"
+    }
+  },
+  {
+    "timestamp": "2025-12-18T06:57:49.356524",
+    "category": "whistleblowing",
+    "hash": "3151084286f59511ce11d4fd234b6485012514587a1968fa55afff83b05e213e",
+    "path": "/tmp/test_vault/whistleblowing/2025/3151084286f5_secret_doc.txt",
+    "meta": {
+      "tag": "urgent"
+    }
   }
 ]

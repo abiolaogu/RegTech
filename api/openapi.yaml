@@ -1,0 +1,46 @@
+# OpenAPI specification for Apply-and-Explain NLG Service
+openapi: 3.0.3
+info:
+  title: Apply-and-Explain NLG Service
+  version: 1.0.0
+  description: >-
+    Service that receives compliance result data and returns a human‑readable explanation
+servers:
+  - url: http://localhost:8000
+    description: Local API server
+paths:
+  /explain:
+    post:
+      summary: Generate explanation for a compliance result
+      operationId: generateExplanation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                result_id:
+                  type: integer
+                  description: Identifier of the compliance result
+                context:
+                  type: string
+                  description: Optional additional context for the explanation
+              required:
+                - result_id
+      responses:
+        '200':
+          description: Successful explanation generation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  explanation:
+                    type: string
+                    description: Human‑readable explanation text
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Internal server error
+components: {}

@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  lumadb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lumadb
+    ports:
+      # SQL Databases
+      - "5432:5432" # PostgreSQL
+      - "3306:3306" # MySQL
+      # NoSQL / Cache
+      - "6379:6379" # Redis
+      - "9042:9042" # Cassandra
+      - "27017:27017" # MongoDB
+      # Analytics
+      - "9200:9200" # Elasticsearch
+      - "8123:8123" # ClickHouse
+      - "8082:8082" # Druid
+      # Observability
+      - "9090:9090" # Prometheus
+      - "4317:4317" # OpenTelemetry gRPC
+    volumes:
+      - lumadb_data:/var/lib/lumadb/data
+      - lumadb_wal:/var/lib/lumadb/wal
+      - ./lumadb-compat/config.toml:/etc/lumadb/config.toml:ro
+    environment:
+      - RUST_LOG=info
+      - RUST_BACKTRACE=1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 16G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - lumadb-network
+
+  # Optional: Grafana for monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lumadb-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - lumadb
+    networks:
+      - lumadb-network
+    profiles:
+      - monitoring
+
+  # Optional: Prometheus for metrics collection
+  prometheus-collector:
+    image: prom/prometheus:latest
+    container_name: lumadb-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - lumadb
+    networks:
+      - lumadb-network
+    profiles:
+      - monitoring
+
+volumes:
+  lumadb_data:
+    driver: local
+  lumadb_wal:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  lumadb-network:
+    driver: bridge

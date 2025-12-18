@@ -1,89 +1,87 @@
+```javascript
+// App.js – Refactored with AuthContext and React Navigation
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { AuthProvider } from './AuthContext';
+import SettingsScreen from './SettingsScreen';
+import { colors, gradients } from './theme';
+import { StyleSheet, View, StatusBar } from 'react-native'; // Removed LinearGradient from here as it's not used in this App.js
+import LoginScreen from './LoginScreen';
+import DashboardScreen from './DashboardScreen';
+
+const Stack = createStackNavigator();
 
 export default function App() {
-    return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
-            <LinearGradient
-                colors={['#0a0e17', '#1a202c']}
-                style={styles.background}
-            />
-
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>RegTech Mobile</Text>
-                <TouchableOpacity style={styles.profileBtn}>
-                    <View style={styles.avatar} />
-                </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.content}>
-
-                {/* Alerts Section */}
-                <Text style={styles.sectionTitle}>Priority Alerts</Text>
-                <View style={[styles.card, styles.alertCard]}>
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>CBN High Alert</Text>
-                        <Text style={styles.badgeRed}>URGENT</Text>
-                    </View>
-                    <Text style={styles.cardText}>4 Potential AML Flags detected in last hour.</Text>
-                    <TouchableOpacity style={styles.actionBtn}>
-                        <Text style={styles.actionBtnText}>Review Now</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Quick Stats Grid */}
-                <Text style={styles.sectionTitle}>Compliance Pulse</Text>
-                <View style={styles.grid}>
-                    <View style={styles.gridItem}>
-                        <Text style={styles.gridLabel}>NCC Levy</Text>
-                        <Text style={styles.gridValue}>N452M</Text>
-                        <Text style={styles.gridStatusWarn}>Pending</Text>
-                    </View>
-                    <View style={styles.gridItem}>
-                        <Text style={styles.gridLabel}>FCC 477</Text>
-                        <Text style={styles.gridValue}>98.5%</Text>
-                        <Text style={styles.gridStatusOK}>Sent</Text>
-                    </View>
-                </View>
-
-                {/* Pending Actions */}
-                <Text style={styles.sectionTitle}>My Tasks</Text>
-                <View style={styles.card}>
-                    <Text style={styles.taskTitle}>Sign Mid-Year Report</Text>
-                    <Text style={styles.taskSub}>Due in 3 days</Text>
-                    <TouchableOpacity style={styles.biometricBtn}>
-                        <Text style={styles.biometricText}>Tap to Sign (Biometric)</Text>
-                    </TouchableOpacity>
-                </View>
-
-            </ScrollView>
-
-            {/* Bottom Nav */}
-            <View style={styles.bottomNav}>
-                <Text style={styles.navItemActive}>Home</Text>
-                <Text style={styles.navItem}>Alerts</Text>
-                <Text style={styles.navItem}>Profile</Text>
-            </View>
-        </View>
-    );
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
+  container: {
+    flex: 1,
+    backgroundColor: colors.backgroundStart,
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '100%',
+  },
+    loginContainer: {
         flex: 1,
-        backgroundColor: '#0a0e17',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 30,
     },
-    background: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        height: '100%',
+    loginTitle: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 10,
     },
+    loginSubtitle: {
+        fontSize: 16,
+        color: '#a0aec0',
+        marginBottom: 50,
+    },
+    inputContainer: {
+        width: '100%',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        marginBottom: 20,
+    },
+    input: {
+        padding: 15,
+        color: '#fff',
+        fontSize: 16,
+    },
+    loginBtn: {
+        width: '100%',
+        backgroundColor: '#00d2ff',
+        padding: 15,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    loginBtnText: {
+        color: '#0a0e17',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    // App Styles
     header: {
         marginTop: 50,
         paddingHorizontal: 20,

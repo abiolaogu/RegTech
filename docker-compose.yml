@@ -4,48 +4,27 @@ services:
   # --- Identity & Access (Placeholder) ---
   # keycloak: ...
 
-  # --- Database ---
-  db:
-    image: postgres:15
-    container_name: regtech_db
-    environment:
-      POSTGRES_USER: regtech
-      POSTGRES_PASSWORD: securepassword
-      POSTGRES_DB: regtech_core
+  # --- LumaDB (Unified Data Layer) ---
+  lumadb:
+    build:
+      context: ./lumadb_reference/lumadb-compat
+      dockerfile: Dockerfile
+    container_name: regtech_lumadb
     ports:
-      - "5432:5432"
+      - "5432:5432" # Postgres Protocol
+      - "8080:8080" # HTTP/API
+      - "9090:9090" # Prometheus
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  # --- Message Broker (Redpanda - Kafka Compatible) ---
-  redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:latest
-    container_name: regtech_broker
-    command:
-      - redpanda start
-      - --smp 1
-      - --memory 1G
-      - --reserve-memory 0M
-      - --overprovisioned
-      - --node-id 0
-      - --check=false
-    ports:
-      - "9092:9092"
-      - "9644:9644"
-
-  # --- Object Storage (MinIO - S3 Compatible) ---
-  minio:
-    image: minio/minio
-    container_name: regtech_storage
-    command: server /data --console-address ":9001"
+      - lumadb_data:/var/lib/lumadb/data
+      - lumadb_wal:/var/lib/lumadb/wal
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
+      - RUST_LOG=info
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # --- Core Backend API ---
   api:
@@ -54,17 +33,18 @@ services:
       dockerfile: Dockerfile.backend
     container_name: regtech_api
     depends_on:
-      - db
-      - redpanda
-      - minio
+      - lumadb
     environment:
-      DATABASE_URL: postgresql://regtech:securepassword@db:5432/regtech_core
-      KAFKA_BROKER_URL: redpanda:9092
-      S3_ENDPOINT: http://minio:9000
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin
+      DATABASE_URL: postgresql://lumadb:lumadb@lumadb:5432/default
+      # Removed KAFKA/S3 env vars as LumaDB replaces them natively via internal tables
     ports:
       - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # --- Frontend Application ---
   web:
@@ -80,5 +60,5 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8000
 
 volumes:
-  postgres_data:
-  minio_data:
+  lumadb_data:
+  lumadb_wal:
