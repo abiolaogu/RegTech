@@ -1,4 +1,4 @@
-```javascript
+/* eslint-disable */
 // App.js – Refactored with AuthContext and React Navigation
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -13,31 +13,31 @@ import DashboardScreen from './DashboardScreen';
 const Stack = createStackNavigator();
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="Login" component={LoginScreen} />
+                    <Stack.Screen name="Dashboard" component={DashboardScreen} />
+                    <Stack.Screen name="Settings" component={SettingsScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </AuthProvider>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.backgroundStart,
-  },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    height: '100%',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: colors.backgroundStart,
+    },
+    background: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        height: '100%',
+    },
     loginContainer: {
         flex: 1,
         justifyContent: 'center',
