@@ -15,18 +15,20 @@ class AOLResult(BaseModel):
     assessable_income: float
     levy_payable: float
 
-def calculate_aol(data: AOLInput) -> AOLResult:
+def calculate_aol(data: AOLInput, levy_percent: Optional[float] = None) -> AOLResult:
     """
-    Calculates the 1% Annual Operating Levy.
-    Formula: Levy = 1% of (Gross - (Interconnect + Roaming))
+    Calculates the Annual Operating Levy using provided percent or default 1%.
+    Formula: Levy = X% of (Gross - (Interconnect + Roaming))
     """
+    # If not provided, ideally fetch from ConfigurationService, but for pure function keep simple or default
+    if levy_percent is None:
+        levy_percent = 0.01 # Fallback if not injected
+
     deductions = data.interconnect_costs + data.roaming_costs
     assessable = data.gross_revenue - deductions
     
-    # Levy is 1% of assessable income
-    # Note: If Assessable is negative, levy is 0? Generally yes, but NCC rules might vary.
-    # Assuming standard tax logic:
-    levy = max(0.0, assessable * 0.01)
+    # Levy is X% of assessable income
+    levy = max(0.0, assessable * levy_percent)
     
     return AOLResult(
         gross_revenue=data.gross_revenue,

@@ -1,38 +1,33 @@
 from datetime import datetime
+from src.modules.configuration.service import ConfigurationService
 
 class AdvisoryService:
-    def __init__(self):
-        # Thresholds configured per NCC Quality of Service Regulation 2012 / 2025 Guidelines
-        self.thresholds = {
-            "DropCallRate": 1.0,           # Max 1%
-            "CallSetupSuccessRate": 98.0,  # Min 98%
-            "InternetLatency": 100         # Max 100ms (Example)
-        }
+    def __init__(self, config_service: ConfigurationService = None):
+        self.config_service = config_service or ConfigurationService()
 
     def process_qos_event(self, metric: str, value: float) -> dict:
         """
-        Evaluates a QoS metric. If breach, generates a remediation report context.
+        Evaluates a QoS metric against dynamic NCC rules.
         """
-        threshold = self.thresholds.get(metric)
-        if threshold is None:
-            return {"status": "ignored", "reason": "Unknown metric"}
+        rule = self.config_service.get_rule_for_metric("NCC", metric)
+        if not rule:
+            return {"status": "ignored", "reason": "No regulatory rule found for metric"}
 
         breach = False
-        if metric == "CallSetupSuccessRate":
-            if value < threshold:
+        
+        # Check Breach Condition
+        if rule.operator == "GT":
+            if value > rule.threshold:
                 breach = True
-        else:
-            # Default logic: Lower is better
-            if value > threshold:
+        elif rule.operator == "LT":
+            if value < rule.threshold:
                 breach = True
-
+        
         if not breach:
             return {"status": "ok", "metric": metric, "value": value}
 
         # Breach Detected -> Generate Report
-        report_context = self._generate_remediation_report(metric, value, threshold)
-        # In real system, this context goes to the PDF renderer and then Email
-        return {"status": "breach_alerted", "report": report_context}
+        return {"status": "breach_alerted", "report": self._generate_remediation_report(metric, value, rule.threshold)}
 
     def _generate_remediation_report(self, metric, value, threshold):
         return {
