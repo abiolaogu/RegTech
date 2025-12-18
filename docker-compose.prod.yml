@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # --- LumaDB (Unified Data Layer) ---
+  lumadb:
+    build:
+      context: ./lumadb_reference/lumadb-compat
+      dockerfile: Dockerfile
+    container_name: regtech_lumadb_prod
+    restart: always
+    ports:
+      - "5432:5432" # Internal usage mostly, consider removing in strict prod
+      - "8080:8080"
+    volumes:
+      - lumadb_data:/var/lib/lumadb/data
+      - lumadb_wal:/var/lib/lumadb/wal
+    environment:
+      - RUST_LOG=info
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - regtech_net
+
+  # --- Core Backend API ---
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: regtech_api_prod
+    restart: always
+    depends_on:
+      - lumadb
+    environment:
+      DATABASE_URL: postgresql://lumadb:lumadb@lumadb:5432/default
+    command: gunicorn src.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - regtech_net
+
+  # --- Frontend Application ---
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: regtech_web_prod
+    restart: always
+    depends_on:
+      - api
+    ports:
+      - "80:3000" # Expose on port 80 for production access
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000 # In real prod, this should be the public domain/LB
+    networks:
+      - regtech_net
+
+volumes:
+  lumadb_data:
+  lumadb_wal:
+
+
+networks:
+  regtech_net:
+    driver: bridge

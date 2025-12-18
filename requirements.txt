@@ -9,5 +9,11 @@ pytest
 pytest-asyncio
 # LumaDB Interaction
 psycopg2-binary
+fastapi
+uvicorn
+pydantic
+requests
+python-multipart
+filelock>=3.20.1
 # Ingestion
 watchdog

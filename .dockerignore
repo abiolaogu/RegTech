@@ -1,0 +1,27 @@
+# Version Control
+.git/
+.gitignore
+
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Services not required for backend build
+mobile/
+frontend/
+lumadb_reference/
+lumadb_shallow/
+docs/
+
+# Local Dev Files
+.env
+.DS_Store
+*.log
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile.frontend
+LumaDB*
